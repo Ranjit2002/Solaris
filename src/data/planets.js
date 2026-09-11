@@ -1,3 +1,7 @@
+const BASE_URL = (import.meta.env.BASE_URL || '/').endsWith('/')
+  ? (import.meta.env.BASE_URL || '/')
+  : `${import.meta.env.BASE_URL}/`;
+
 export const SOLAR_SYSTEM = [
   {
     id: "sun",
@@ -33,7 +37,7 @@ export const SOLAR_SYSTEM = [
       textureType: "sun",
       spinSpeedMultiplier: 0.003,
     },
-    photoUrl: "/images/planets/sun.jpg",
+    photoUrl: `${BASE_URL}images/planets/sun.jpg`,
     photoCredit: "NASA / SDO Atmospheric Imaging Assembly",
     photoCaption: "Extreme Ultraviolet portrait of solar magnetic loop prominence arcs erupting into space.",
     overview:
@@ -89,7 +93,7 @@ export const SOLAR_SYSTEM = [
       textureType: "mercury",
       spinSpeedMultiplier: 0.004,
     },
-    photoUrl: "/images/planets/mercury.jpg",
+    photoUrl: `${BASE_URL}images/planets/mercury.jpg`,
     photoCredit: "NASA / Johns Hopkins APL / Carnegie Institution",
     photoCaption: "MESSENGER enhanced-color mosaic revealing basaltic volcanic plains and impact basins.",
     overview:
@@ -147,7 +151,7 @@ export const SOLAR_SYSTEM = [
       hasAtmosphereGlow: true,
       atmosphereColor: 0xffd166,
     },
-    photoUrl: "/images/planets/venus.jpg",
+    photoUrl: `${BASE_URL}images/planets/venus.jpg`,
     photoCredit: "NASA / JPL-Caltech / Mariner 10",
     photoCaption: "Global color-processed ultraviolet portrait showing thick, turbulent sulfuric acid cloud decks.",
     overview:
@@ -207,7 +211,7 @@ export const SOLAR_SYSTEM = [
       hasClouds: true,
       spinSpeedMultiplier: 0.008,
     },
-    photoUrl: "/images/planets/earth.jpg",
+    photoUrl: `${BASE_URL}images/planets/earth.jpg`,
     photoCredit: "NASA / Apollo 17 Crew",
     photoCaption: "The iconic 'Blue Marble' view of planet Earth, taken December 7, 1972 on the way to the Moon.",
     overview:
@@ -265,7 +269,7 @@ export const SOLAR_SYSTEM = [
       hasAtmosphereGlow: true,
       atmosphereColor: 0xf87171,
     },
-    photoUrl: "/images/planets/mars.jpg",
+    photoUrl: `${BASE_URL}images/planets/mars.jpg`,
     photoCredit: "ESA / DLR / FU Berlin / NASA JPL",
     photoCaption: "High-resolution mosaic capturing the colossal Valles Marineris rift system and polar ice deposits.",
     overview:
@@ -321,7 +325,7 @@ export const SOLAR_SYSTEM = [
       textureType: "jupiter",
       spinSpeedMultiplier: 0.016, // Very fast spin
     },
-    photoUrl: "/images/planets/jupiter.jpg",
+    photoUrl: `${BASE_URL}images/planets/jupiter.jpg`,
     photoCredit: "NASA / JPL-Caltech / SwRI / MSSS / Kevin M. Gill",
     photoCaption: "Juno spacecraft high-resolution close flyby portrait of the Great Red Spot and cyclonic bands.",
     overview:
@@ -380,7 +384,7 @@ export const SOLAR_SYSTEM = [
       ringOuterRadius: 4.8,
       spinSpeedMultiplier: 0.014,
     },
-    photoUrl: "/images/planets/saturn.jpg",
+    photoUrl: `${BASE_URL}images/planets/saturn.jpg`,
     photoCredit: "NASA / JPL-Caltech / Space Science Institute",
     photoCaption: "Cassini orbiter natural-color portrait capturing the magnificent, razor-thin ice ring system.",
     overview:
@@ -441,7 +445,7 @@ export const SOLAR_SYSTEM = [
       hasAtmosphereGlow: true,
       atmosphereColor: 0x22d3ee,
     },
-    photoUrl: "/images/planets/uranus.jpg",
+    photoUrl: `${BASE_URL}images/planets/uranus.jpg`,
     photoCredit: "NASA / JPL-Caltech / Voyager 2",
     photoCaption: "Voyager 2 true-color portrait showing the serene aquamarine methane haze atmosphere.",
     overview:
@@ -499,7 +503,7 @@ export const SOLAR_SYSTEM = [
       hasAtmosphereGlow: true,
       atmosphereColor: 0x3b82f6,
     },
-    photoUrl: "/images/planets/neptune.jpg",
+    photoUrl: `${BASE_URL}images/planets/neptune.jpg`,
     photoCredit: "NASA / JPL-Caltech / Voyager 2",
     photoCaption: "Voyager 2 historic high-resolution portrait revealing the Great Dark Spot and white cirrus clouds.",
     overview:

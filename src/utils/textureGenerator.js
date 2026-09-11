@@ -524,60 +524,68 @@ export function createNeptuneTexture() {
 }
 
 /**
+ * Procedural texture for Stars / Milky Way Skybox fallback
+ */
+export function createStarsTexture() {
+  const { canvas, ctx } = createOffscreenCanvas(1024, 512);
+  ctx.fillStyle = '#030712';
+  ctx.fillRect(0, 0, 1024, 512);
+
+  // Milky way subtle gradient nebula band
+  const nebula = ctx.createLinearGradient(0, 150, 1024, 360);
+  nebula.addColorStop(0, 'rgba(15, 23, 42, 0)');
+  nebula.addColorStop(0.5, 'rgba(56, 189, 248, 0.1)');
+  nebula.addColorStop(1, 'rgba(15, 23, 42, 0)');
+  ctx.fillStyle = nebula;
+  ctx.fillRect(0, 0, 1024, 512);
+
+  // Star specks
+  for (let i = 0; i < 800; i++) {
+    const x = Math.random() * 1024;
+    const y = Math.random() * 512;
+    const r = Math.random() * 1.5;
+    const alpha = 0.2 + Math.random() * 0.8;
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  return texture;
+}
+
+/**
  * High-performance Texture Loader & Generator for Solaris 3D
  * Loads authentic 2K Solar System Scope / NASA textures with procedural fallbacks.
  */
 const textureCache = new Map();
 const textureLoader = new THREE.TextureLoader();
 
+// Dynamic base URL for GitHub Pages / subpath hosting
+const BASE_URL = (import.meta.env.BASE_URL || '/').endsWith('/')
+  ? (import.meta.env.BASE_URL || '/')
+  : `${import.meta.env.BASE_URL}/`;
+
 // Mapping of texture types to local 2K assets in public/textures/
 const LOCAL_2K_TEXTURES = {
-  sun: '/textures/2k_sun.jpg',
-  mercury: '/textures/2k_mercury.jpg',
-  venus: '/textures/2k_venus_atmosphere.jpg',
-  earth: '/textures/2k_earth_daymap.jpg',
-  clouds: '/textures/2k_earth_clouds.jpg',
-  moon: '/textures/2k_moon.jpg',
-  mars: '/textures/2k_mars.jpg',
-  jupiter: '/textures/2k_jupiter.jpg',
-  saturn: '/textures/2k_saturn.jpg',
-  saturnRings: '/textures/2k_saturn_ring_alpha.png',
-  uranus: '/textures/2k_uranus.jpg',
-  neptune: '/textures/2k_neptune.jpg',
-  stars: '/textures/2k_stars_milky_way.jpg',
+  sun: `${BASE_URL}textures/2k_sun.jpg`,
+  mercury: `${BASE_URL}textures/2k_mercury.jpg`,
+  venus: `${BASE_URL}textures/2k_venus_atmosphere.jpg`,
+  earth: `${BASE_URL}textures/2k_earth_daymap.jpg`,
+  clouds: `${BASE_URL}textures/2k_earth_clouds.jpg`,
+  moon: `${BASE_URL}textures/2k_moon.jpg`,
+  mars: `${BASE_URL}textures/2k_mars.jpg`,
+  jupiter: `${BASE_URL}textures/2k_jupiter.jpg`,
+  saturn: `${BASE_URL}textures/2k_saturn.jpg`,
+  saturnRings: `${BASE_URL}textures/2k_saturn_ring_alpha.png`,
+  uranus: `${BASE_URL}textures/2k_uranus.jpg`,
+  neptune: `${BASE_URL}textures/2k_neptune.jpg`,
+  stars: `${BASE_URL}textures/2k_stars_milky_way.jpg`,
 };
 
-export function getPlanetTexture(type) {
-  if (textureCache.has(type)) {
-    return textureCache.get(type);
-  }
-
-  // If a 2K local texture exists, load it with optimal Three.js settings
-  if (LOCAL_2K_TEXTURES[type]) {
-    const url = LOCAL_2K_TEXTURES[type];
-    const texture = textureLoader.load(
-      url,
-      (loadedTex) => {
-        loadedTex.colorSpace = THREE.SRGBColorSpace;
-        loadedTex.minFilter = THREE.LinearMipmapLinearFilter;
-        loadedTex.magFilter = THREE.LinearFilter;
-        loadedTex.generateMipmaps = true;
-        loadedTex.needsUpdate = true;
-      },
-      undefined,
-      (err) => {
-        console.warn(`[Solaris] Fallback to procedural texture for ${type}:`, err);
-      }
-    );
-
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    textureCache.set(type, texture);
-    return texture;
-  }
-
-  // Procedural Fallback Generators
+function generateFallbackTexture(type) {
   let tex;
   switch (type) {
     case 'sun':
@@ -619,11 +627,59 @@ export function getPlanetTexture(type) {
     case 'neptune':
       tex = createNeptuneTexture();
       break;
+    case 'stars':
+      tex = createStarsTexture();
+      break;
     default:
       tex = createMercuryTexture();
   }
-
   tex.colorSpace = THREE.SRGBColorSpace;
-  textureCache.set(type, tex);
   return tex;
+}
+
+export function getPlanetTexture(type) {
+  if (textureCache.has(type)) {
+    return textureCache.get(type);
+  }
+
+  // Pre-generate fallback texture to use as instant placeholder and guarantee zero black sphere
+  const fallback = generateFallbackTexture(type);
+
+  // If a 2K local texture exists, load it with optimal Three.js settings
+  if (LOCAL_2K_TEXTURES[type]) {
+    const url = LOCAL_2K_TEXTURES[type];
+    const texture = textureLoader.load(
+      url,
+      (loadedTex) => {
+        loadedTex.colorSpace = THREE.SRGBColorSpace;
+        loadedTex.minFilter = THREE.LinearMipmapLinearFilter;
+        loadedTex.magFilter = THREE.LinearFilter;
+        loadedTex.generateMipmaps = true;
+        loadedTex.needsUpdate = true;
+      },
+      undefined,
+      (err) => {
+        console.warn(`[Solaris] Texture file load failed for ${type} at ${url}. Retaining procedural fallback.`, err);
+        if (fallback && fallback.image) {
+          texture.image = fallback.image;
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.needsUpdate = true;
+        }
+      }
+    );
+
+    // Assign fallback canvas as initial image so material is never rendered as pitch black while 2K file downloads
+    if (fallback && fallback.image) {
+      texture.image = fallback.image;
+    }
+
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    textureCache.set(type, texture);
+    return texture;
+  }
+
+  textureCache.set(type, fallback);
+  return fallback;
 }
