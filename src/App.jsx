@@ -25,10 +25,14 @@ export default function App() {
   const [lightingMode, setLightingMode] = useState('cinematic');
   const [comparePlanet, setComparePlanet] = useState(null);
 
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const scrollTimeoutRef = useRef(null);
+  const lastScrollYRef = useRef(0);
+
   const showcaseRefs = useRef([]);
   const dossierRefs = useRef([]);
 
-  // Setup scroll listener to track active planet and current stage
+  // Setup scroll listener to track active planet, current stage, and dynamic Back to Top button visibility
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -37,6 +41,33 @@ export default function App() {
       
       const overallProgress = totalDocHeight > 0 ? scrollY / totalDocHeight : 0;
       setScrollProgress(overallProgress);
+
+      // Dynamic "Back to top" button behavior:
+      // - Show after scrolling 75px (between 50px and 100px)
+      // - Show immediately when scrolling starts or scrolling up
+      // - Hide when scrolling stops (with a 1.5s timer)
+      // - Hide when reaching the very bottom
+      const isPastThreshold = scrollY > 75;
+      const isAtBottom = totalDocHeight > 0 && scrollY >= totalDocHeight - 75;
+
+      if (!isPastThreshold || isAtBottom) {
+        setShowBackToTop(false);
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+      } else {
+        // Show immediately upon active scroll
+        setShowBackToTop(true);
+
+        // Hide when scrolling stops
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+        scrollTimeoutRef.current = setTimeout(() => {
+          setShowBackToTop(false);
+        }, 1500);
+      }
+      lastScrollYRef.current = scrollY;
 
       const viewportCenter = windowHeight / 2;
       let closestPlanet = 0;
@@ -77,7 +108,12 @@ export default function App() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial run
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, []);
 
   const scrollToShowcase = (index) => {
@@ -200,9 +236,7 @@ export default function App() {
               <div className="pointer-events-auto flex flex-col items-center text-center max-w-xl mx-auto space-y-3 pt-12">
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold tracking-wider uppercase bg-white/5 border border-white/10 text-slate-300 backdrop-blur-md shadow-lg">
                   <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${planet.gradient} animate-pulse`} />
-                  <span>{planet.numberLabel}</span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-slate-400">{planet.actualRadiusKm.toLocaleString()} KM</span>
+                  <span>Radius: {planet.actualRadiusKm.toLocaleString()} KM</span>
                 </div>
 
                 <h2 className="text-4xl sm:text-6xl md:text-7xl font-black font-space tracking-tight">
@@ -234,7 +268,9 @@ export default function App() {
                   <div className="h-3 w-px bg-white/20 hidden sm:block" />
                   <div className="flex items-center gap-1.5">
                     <Orbit className="w-3.5 h-3.5 text-sky-400" />
-                    <span className="font-mono">Orbit: {planet.distanceFromSunAU}</span>
+                    <span className="font-mono">
+                      {planet.id === 'sun' ? 'Center of System' : `Dist: ${planet.distanceFromSunKm}`}
+                    </span>
                   </div>
                 </div>
 
@@ -342,6 +378,29 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* 8. Floating Bottom Right "Back to top" Button */}
+      <div
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 transition-all duration-500 transform ${
+          showBackToTop
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
+      >
+        <button
+          onClick={scrollToTop}
+          className="flex items-center justify-center gap-2.5 p-2.5 sm:px-4 sm:py-2.5 rounded-2xl glass-panel border border-amber-500/40 bg-slate-950/90 hover:bg-amber-500/20 text-white shadow-2xl hover:shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer group"
+          title="Back to top"
+          aria-label="Back to top button"
+        >
+          <div className="w-7 h-7 sm:w-6 sm:h-6 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-slate-950 font-bold shadow-md group-hover:-translate-y-0.5 transition-transform">
+            <ArrowUp className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+          </div>
+          <span className="hidden sm:inline text-xs font-space font-bold tracking-wider uppercase bg-gradient-to-r from-amber-200 via-yellow-100 to-white bg-clip-text text-transparent whitespace-nowrap">
+            Back to top
+          </span>
+        </button>
+      </div>
 
     </div>
   );

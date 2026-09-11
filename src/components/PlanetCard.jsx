@@ -52,10 +52,10 @@ export default function PlanetCard({
           {/* Header Section: Planet Number & Titles */}
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div>
-              {/* Order / Number from Sun Tag */}
+              {/* Radius Tag */}
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-wider uppercase mb-3 bg-white/5 border border-white/10 text-slate-300">
                 <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${planet.gradient}`} />
-                {planet.numberLabel}
+                <span>Radius: {planet.actualRadiusKm.toLocaleString()} KM</span>
               </div>
 
               {/* Planet Name with Linear Gradient */}
@@ -159,8 +159,8 @@ export default function PlanetCard({
                 <Compass className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-45 transition-transform" />
                 <span>Distance</span>
               </div>
-              <div className="font-space font-bold text-sm text-slate-100">{planet.distanceFromSunAU}</div>
-              <div className="text-[11px] text-slate-400 truncate">{planet.distanceFromSunKm}</div>
+              <div className="font-space font-bold text-sm text-slate-100">{planet.distanceFromSunKm}</div>
+              <div className="text-[11px] text-slate-400 truncate">{planet.distanceFromSunAU}</div>
             </div>
 
             {/* Metric 2: Orbit / Year */}
